@@ -1,0 +1,24 @@
+{
+    "name": "Pres.Mac",
+    "rootNamespace": "",
+    "references": [
+        "GUID:2d5ba533c2e5c734583247e090661127",
+        "GUID:45900ea0500694741b12fbdadcc8971e",
+        "GUID:d5c64e68b649cfe4ea1e369aec8a38bd",
+        "GUID:18b07b76ba3c0de4cafaea56c8c8f5c7",
+        "GUID:c064d14da68e9e24ea6855b492650605",
+        "GUID:824916b18c2399b4caa676c56a093e24",
+        "GUID:9a7b1bf4f91422c4b88d877f960c7433"
+    ],
+    "includePlatforms": [
+        "macOSStandalone"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

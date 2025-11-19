@@ -1,0 +1,22 @@
+{
+    "name": "Pres.Web",
+    "rootNamespace": "",
+    "references": [
+        "GUID:2d5ba533c2e5c734583247e090661127",
+        "GUID:45900ea0500694741b12fbdadcc8971e",
+        "GUID:d5c64e68b649cfe4ea1e369aec8a38bd",
+        "GUID:b9a9265fe734be14d88a596a3a91bb36",
+        "GUID:824916b18c2399b4caa676c56a093e24"
+    ],
+    "includePlatforms": [
+        "WebGL"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

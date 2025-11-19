@@ -1,0 +1,17 @@
+{
+    "name": "Infra.Shared",
+    "rootNamespace": "",
+    "references": [
+        "GUID:2d5ba533c2e5c734583247e090661127",
+        "GUID:45900ea0500694741b12fbdadcc8971e"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,6 @@
+﻿<Solution>
+  <Project Path="Domain.csproj" />
+  <Project Path="Application.csproj" />
+  <Project Path="Infra.Shared.csproj" />
+  <Project Path="Pres.Shared.csproj" />
+</Solution>
