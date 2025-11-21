@@ -2,5 +2,7 @@
   <Project Path="Domain.csproj" />
   <Project Path="Application.csproj" />
   <Project Path="Infra.Shared.csproj" />
+  <Project Path="Infra.Standalone.csproj" />
   <Project Path="Pres.Shared.csproj" />
+  <Project Path="Bootstrapper.csproj" />
 </Solution>

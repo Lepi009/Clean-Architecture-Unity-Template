@@ -1,7 +1,7 @@
 using Domain;
 using UnityEngine;
 
-namespace Application {
+namespace Infrastructure {
     public class UnityTimeProvider : ITimeProvider {
         public double Now => Time.realtimeSinceStartupAsDouble;
     }

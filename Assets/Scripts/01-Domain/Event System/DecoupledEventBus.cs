@@ -6,10 +6,10 @@ namespace Domain.EventBus {
 
     /// <summary> an event bus that decouples in time and space </summary>
     public class DecoupledEventBus : IEventBus, IUpdatable {
-        private const double MaxLoopTimeSec = 0.005;
-        private readonly ConcurrentDictionary<Type, List<Subscription>> _subscribers = new();
-        private readonly ConcurrentQueue<HandleAction> _handlers = new();
-        private readonly ConcurrentDictionary<Type, object> _locks = new();
+        private const double MAX_UPDATE_PROCESSING_TIME = 0.005;
+        private readonly ConcurrentDictionary<Type, List<EventSubscription>> _subscribers = new();
+        private readonly ConcurrentQueue<EventHandlingTask> _eventDispatchQueue = new();
+        private readonly ConcurrentDictionary<Type, object> _eventTypeLocks = new();
         private readonly ITimeProvider _timeProvider;
 
         public DecoupledEventBus(ITimeProvider timeProvider) {
@@ -21,21 +21,21 @@ namespace Domain.EventBus {
         SubscriptionToken IEventBus.Subscribe<T>(Action<T> handler, int priority, Predicate<T> filter) {
             var type = typeof(T);
 
-            var sub = new Subscription(
+            var subscription = new EventSubscription(
                 new SubscriptionToken(type),
                 e => handler((T)e),
                 priority,
                 filter != null ? (e => filter((T)e)) : null
             );
-            var token = sub.Token;
+            var token = subscription.Token;
 
-            var list = _subscribers.GetOrAdd(type, _ => new List<Subscription>());
+            var list = _subscribers.GetOrAdd(type, _ => new List<EventSubscription>());
 
-            lock(_locks.GetOrAdd(type, _ => new object())) {
+            lock(_eventTypeLocks.GetOrAdd(type, _ => new object())) {
                 // Binary insert by priority (descending)
-                int index = list.BinarySearch(sub);
+                int index = list.BinarySearch(subscription);
                 if(index < 0) index = ~index;
-                list.Insert(index, sub);
+                list.Insert(index, subscription);
             }
 
             return token;
@@ -43,12 +43,12 @@ namespace Domain.EventBus {
 
         /// <summary>Unsubscribe using the token returned by Subscribe.</summary>
         void IEventBus.Unsubscribe(SubscriptionToken token) {
-            if(!_subscribers.TryGetValue(token.EventType, out var list)) return;
+            if(!_subscribers.TryGetValue(token.EventType, out var subscriptions)) return;
 
-            lock(_locks.GetOrAdd(token.EventType, _ => new object())) {
-                for(int i = list.Count - 1; i >= 0; i--) {
-                    if(list[i].Token.Id == token.Id) {
-                        list.RemoveAt(i);
+            lock(_eventTypeLocks.GetOrAdd(token.EventType, _ => new object())) {
+                for(int i = subscriptions.Count - 1; i >= 0; i--) {
+                    if(subscriptions[i].Token.Id == token.Id) {
+                        subscriptions.RemoveAt(i);
                     }
                 }
             }
@@ -60,10 +60,10 @@ namespace Domain.EventBus {
             var type = gameEvent.GetType();
             if(!_subscribers.TryGetValue(type, out var list)) return;
 
-            lock(_locks.GetOrAdd(type, _ => new object())) {
+            lock(_eventTypeLocks.GetOrAdd(type, _ => new object())) {
                 foreach(var sub in list) {
                     if(sub.Filter == null || sub.Filter(gameEvent)) {
-                        _handlers.Enqueue(new HandleAction(gameEvent, sub.Handler));
+                        _eventDispatchQueue.Enqueue(new EventHandlingTask(gameEvent, sub.Handler));
                     }
                 }
             }
@@ -71,34 +71,23 @@ namespace Domain.EventBus {
 
         /// <summary>Called every frame to check for new handlers to resolve</summary>
         public void Update(float deltaTime) {
-            if(_handlers.IsEmpty) return;
+            if(_eventDispatchQueue.IsEmpty) return;
 
-            double startTime = _timeProvider.Now;
-            while(_timeProvider.Now - startTime < MaxLoopTimeSec && !_handlers.IsEmpty) {
-                if(!_handlers.TryDequeue(out var handler))
+            double dispatchTime = _timeProvider.Now;
+            while(_timeProvider.Now - dispatchTime < MAX_UPDATE_PROCESSING_TIME && !_eventDispatchQueue.IsEmpty) {
+                if(!_eventDispatchQueue.TryDequeue(out var dispatch))
                     break;
 
-                try {
-                    handler.Handler(handler.Event);
-                }
-                catch(Exception e) {
-                    ServiceLocator.Logger.LogException(e);
-                }
+                try { dispatch.Callback(dispatch.GameEvent); }
+                catch(Exception e) { ServiceLocator.Logger.LogException(e); }
             }
         }
 
-        private sealed record Subscription(SubscriptionToken Token, Action<IGameEvent> Handler, int Priority, Predicate<IGameEvent> Filter = null) : IComparable<Subscription> {
-            public int CompareTo(Subscription other)
+        private sealed record EventSubscription(SubscriptionToken Token, Action<IGameEvent> Handler, int Priority, Predicate<IGameEvent> Filter = null) : IComparable<EventSubscription> {
+            public int CompareTo(EventSubscription other)
                 => other is null ? -1 : other.Priority.CompareTo(Priority);
         }
 
-        private readonly struct HandleAction {
-            public readonly IGameEvent Event;
-            public readonly Action<IGameEvent> Handler;
-            public HandleAction(IGameEvent gameEvent, Action<IGameEvent> handler) {
-                Event = gameEvent;
-                Handler = handler;
-            }
-        }
+        private readonly record struct EventHandlingTask(IGameEvent GameEvent, Action<IGameEvent> Callback);
     }
 }

@@ -1,0 +1,29 @@
+{
+    "name": "Bootstrapper",
+    "rootNamespace": "",
+    "references": [
+        "GUID:2d5ba533c2e5c734583247e090661127",
+        "GUID:45900ea0500694741b12fbdadcc8971e",
+        "GUID:d5c64e68b649cfe4ea1e369aec8a38bd",
+        "GUID:18b07b76ba3c0de4cafaea56c8c8f5c7",
+        "GUID:0e666df2c8a82e74c9ccee85d74d23d4",
+        "GUID:c064d14da68e9e24ea6855b492650605",
+        "GUID:ba0a52b179fba4a4bbed609a5365e090",
+        "GUID:b9a9265fe734be14d88a596a3a91bb36",
+        "GUID:824916b18c2399b4caa676c56a093e24",
+        "GUID:9a7b1bf4f91422c4b88d877f960c7433",
+        "GUID:631443db4827db94682b6d25d4ea1632",
+        "GUID:e8ad576be86c4324ca5c6006eeeb4050",
+        "GUID:ee2df888f5e0d1f4abf55f2fb91e5b0c",
+        "GUID:af7cd1ed2e39fde4585dee87c7bd81b7"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
