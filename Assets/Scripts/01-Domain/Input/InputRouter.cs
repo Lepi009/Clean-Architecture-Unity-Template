@@ -1,6 +1,5 @@
 namespace Domain {
     public class InputRouter {
-        private readonly PointerGestureRecognizer _recognizer = new();
 
         private readonly InputLayerManager _layerManager;
 
@@ -8,22 +7,13 @@ namespace Domain {
             _layerManager = layerManager;
         }
 
-        public void OnInputEvent(InputEvent evt) {
-            // feed event to recognizer
-            if(evt.Type is InputEventType.MouseDown or InputEventType.MouseMove or InputEventType.MouseUp)
-                _recognizer.Process(evt);
-
-            // handle original input
-            PropagateToLayers(evt);
-
-            // handle generated gesture events
-            foreach(var ge in _recognizer.ConsumeGeneratedEvents())
-                PropagateToLayers(ge);
+        public void OnInputCommand(InputCommand command) {
+            PropagateToLayers(command);
         }
 
-        private void PropagateToLayers(InputEvent evt) {
+        private void PropagateToLayers(InputCommand command) {
             foreach(var layer in _layerManager.LayersTopDown) {
-                var result = layer.HandleInput(evt);
+                var result = layer.HandleNewInput(command);
                 if(result == InputConsumeType.Handled)
                     break;
             }

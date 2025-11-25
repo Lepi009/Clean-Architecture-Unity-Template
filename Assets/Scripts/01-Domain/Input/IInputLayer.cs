@@ -1,9 +1,7 @@
 namespace Domain {
     public interface IInputLayer {
-        // Called to handle a raw input event. Return how the event was consumed.
-        InputConsumeType HandleInput(InputEvent evt);
-
         InputLayerType Type { get; }
+        InputConsumeType HandleNewInput(InputCommand command);
     }
 
     public enum InputLayerType {
