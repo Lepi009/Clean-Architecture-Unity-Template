@@ -50,9 +50,32 @@ All necessary MonoBehaviours are implemented in this layer. Those include the vi
 
 # Core Systems
 ## Event Bus
+The event bus serves as an essential communication channel between services. As part of the domain layer, its primary purpose is to improve the decoupling. One service can listen in to what has occurred and react to them without the knowledge of other services. Also, it enhances the Open-Closed Principle . Additional services can be implemented by listening to the event bus and reacting to incoming events, without modifying the services that send the events. The concrete design of the event bus is available [here](Assets/Scripts/01-Domain/Event%20System/DecoupledEventBus.cs)..
+
 ## Bootstrapper
+The bootstrapper solves multiple problems in one go: tight component coupling, limited flexibility, layer entanglement, and code tied to a single platform. The bootstrapper centralizes lifecycle events, creates the services, and injects them using the dependency injection pattern. See the [HelloWorld-Example bootstrapper](Assets/Scripts/Bootstrapper/HelloWorldBootstrapper.cs).
+
+The dependency inversion is necessary to separate layers and improve decoupling. A service does not directly reference an object. It references an interface, but the concrete implementation is unknown. The bootstrapper knows the concrete implementation and injects it into the constructor. The implementation can be easily swapped, improving flexibility and decoupling the concrete implementation from its usage. Another benefit is the platform abstraction. Depending on the platform the game is played on, the corresponding platform-specific service can be injected (see \autoref{Design/PlatformAdapters} for more details).
+
+It is a MonoBehaviour component and must be attached to a game object in the first scene played. By modifying Unity's execution order, it is guaranteed that the bootstrapper's Awake method is executed first. In this method, most of the services are created, and most of the injection happens.
+
+The bootstrapper creates service after service. A newly created service is saved in the  [DIContainer](Assets/Scripts/01-Domain/Bootstrapper/DIContainer.cs). If a service is a concrete implementation of an interface or abstraction, the container maps the interface to the concrete implementation on registration. After that, the concrete implementation can be resolved using the interface as the key. Thus, a concrete implementation can be exchanged by simply changing the registration. The bootstrapper continues instantiating the services. When a service needs an injection in its constructor, the container resolves it. The DIContainer also manages which services can be initialized and updated.
+
+A manual dependency injection approach was chosen because the number of services in the Unbreachable use case is relatively small. Nevertheless, the injection process must be handled carefully. Each service must be instantiated and registered before it can be resolved, making the registration order crucial. Circular dependencies can be mitigated through field injection where necessary. The \codeRef{Awake} method, however, can quickly become complex as the number of services increases. This method represents one of the most intricate parts of the entire solution due to its dependency order, initialization logic, and overall importance. On the positive side, this approach results in services that are leaner, more modular, and better decoupled from one another.
+
+Inside the constructor, a service has only limited functionality. Since not every service has been built yet, sending events through the event bus could cause problems. Thus, a service can implement the [IInitializable interface](Assets/Scripts/01-Domain/Bootstrapper/IInitializable.cs). In the bootstrapper's start method, this initialization function is called for each service that implements this interface. At this stage, all services have been created. Since only MonoBehaviours receive the Update method, services can also receive it by implementing the [IUpdatable interface](Assets/Scripts/01-Domain/Bootstrapper/IUpdatable.cs).
+
+An advantage comes in testing services. Testing smaller parts of the game can be done by writing a custom bootstrapper with only the necessary services. Those services can additionally be exchanged quickly, which is beneficial for testing. 
+
 ## Service Locator
+The service locator pattern provides a global access point to services, allowing components to obtain the services they require without depending on their concrete implementations and without injection. An example is shown [here](Assets/Scripts/01-Domain/Basics/ServiceLocator.cs)
+
+The locator maintains a registry of available services and returns the instance at runtime. This approach promotes flexibility, as implementations can be replaced or configured at runtime without altering client code. However, because it hides dependencies behind a global access point, it can reduce transparency and complicate testing if overused. Thus, it is used only for services that must be used in many classes. Those include the event bus, a logging system, a random number service, and an asynchronous service.
+
+The main benefit of using a service locator is that it reduces the number of required injections. Services such as an event bus or a custom logger are often needed across many parts of the application, and injecting them can create clutter. A service locator provides easy, centralized access to these services, thereby reducing the bootstrapper’s responsibilities.
+
 ## Async Operations using Coroutines
+
 ## Platform adapters
 
 # User Interface
